@@ -26,11 +26,34 @@ const riichiCityIdentitySchema = new mongoose.Schema(
 const userSchema = new mongoose.Schema(
   {
     discordId: { type: String, required: false },
-    name: { type: String, required: false },
+    name: { type: String, required: true },
     majsoulIdentity: { type: majsoulIdentitySchema, required: false },
     tenhouIdentity: { type: tenhouIdentitySchema, required: false },
     riichiCityIdentity: { type: riichiCityIdentitySchema, required: false },
     isDeleted: { type: Boolean, required: true, default: false },
+    emailVerified: { type: Boolean, required: true, default: false },
+    passwordHash: {
+      type: String,
+      required: false,
+    },
+    email: {
+      type: String,
+      required: false,
+      unique: true,
+      sparse: true,
+      trim: true,
+      lowercase: true,
+    },
+    avatar: { type: String, required: false },
+    lastLogin: { type: Date, required: false },
+    verificationToken: {
+      type: String,
+      required: false,
+    },
+    verificationTokenExpires: {
+      type: Date,
+      required: false,
+    },
   },
   {
     methods: {},
@@ -76,6 +99,15 @@ const userSchema = new mongoose.Schema(
   }
 );
 
+// Remove password from JSON output
+userSchema.methods.toJSON = function () {
+  const obj = this.toObject();
+  delete obj.passwordHash;
+  return obj;
+};
+
 export const UserModel = mongoose.model("User", userSchema);
 
-export type User = mongoose.InferSchemaType<typeof userSchema>;
+export type User = mongoose.InferSchemaType<typeof userSchema> & {
+  _id: mongoose.Types.ObjectId;
+};
